@@ -7,6 +7,10 @@ type Attributes = {
   agility: number;
   luck: number;
 };
+type PointAllocationProps = {
+  onBack: () => void;
+  onContinue: () => void;
+};
 
 export default function PointAllocation() {
   const [points, setPoints] = useState(20);
