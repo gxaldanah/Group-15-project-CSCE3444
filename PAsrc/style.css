@@ -1,0 +1,12 @@
+body {
+  font-family: sans-serif;
+  padding: 20px;
+}
+
+#stats div {
+  margin: 8px 0;
+}
+
+button {
+  margin: 0 5px;
+}
