@@ -1,10 +1,11 @@
 import {useState} from "react";
-import CharacterSelect from "./composition/charSelect.tsx";
-import PointAllocation from "./PointAllocation.tsx";
+import CharacterSelect from "./composition/charSelect";
+import PointAllocation from "./PointAllocation";
+
 function App() {
 
   // track what screen is shown 
-const [screen, setScreen] = useState<"menu" | "characters" | "summary">("menu");
+const [screen, setScreen] = useState<"menu" | "characters" | "allocation" | "summary">("menu");
 
 // stores selected char. name
 const [selectedCharacter, setSelectedCharacter] = useState("");
@@ -60,15 +61,22 @@ const [selectedCharacter, setSelectedCharacter] = useState("");
       </div>
     );
   }
-if (screen === "characters") {
+
+   if (screen === "characters") {
     return (
       <CharacterSelect
         onBack={() => setScreen("menu")}
-        onChoose={(name) => {
+        onChoose={(name: string) => {
           setSelectedCharacter(name);
-          setScreen("summary");
+          setScreen("allocation");
         }}
       />
+    );
+  }
+
+if (screen === "allocation") {
+    return (
+      <PointAllocation />
     );
   }
 
@@ -116,6 +124,10 @@ if (screen === "characters") {
         >
           Choose Again
         </button>
+      </div>
+
+      <div style={{ marginTop: "40px:"}}>
+        <PointAllocation />
       </div>
     </div>
   );
