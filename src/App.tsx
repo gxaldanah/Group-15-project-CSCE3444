@@ -13,6 +13,10 @@ function App() {
           Load Saved Game
         </button>
       </div>
+
+      <div style={{ marginTop: "40px:"}}>
+        <PointAllocation />
+      </div>
     </div>
   );
 }
