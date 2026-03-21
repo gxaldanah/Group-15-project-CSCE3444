@@ -1,3 +1,6 @@
+import PointAllocation from "./PointAllocation";
+console.log(PointAllocation);
+
 function App() {
   return (
     <div style={{ padding: "2rem", fontFamily: "Arial" }}>

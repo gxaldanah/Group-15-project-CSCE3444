@@ -54,7 +54,7 @@ export default function PointAllocation() {
 
         return (
           <div key={attr}>
-            {attr}
+            {attr.charAt(0).toUpperCase() + attr.slice(1)}
             <button onClick={() => updateStat(attr, -1)}>-</button>
             <span>{stats[attr]}</span>
             <button onClick={() => updateStat(attr, 1)}>+</button>
