@@ -48,12 +48,12 @@ export default function CharacterSelect({
     >
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
         {/* title */}
-        <h1 style={{ textAlign: "center", marginBottom: "8px" }}>
+        <h1 style={{color: "white", textAlign: "center", marginBottom: "22px" }}>
           Choose Your Character
         </h1>
 
         {/* subtitle */}
-        <p style={{ textAlign: "center", color: "#d1d5db", marginBottom: "24px" }}>
+        <p style={{ textAlign: "center", color: "#d1d5db", marginBottom: "30px" }}>
           Each character has unique strengths that will shape your journey.
         </p>
 
