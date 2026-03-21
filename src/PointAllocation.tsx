@@ -1,4 +1,4 @@
-import { useState } from "react";
+mport { useState } from "react";
 
 type Attributes = {
   strength: number;
