@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
+import PointAllocation from "./PointAllocation";
 
 function App() {
   const [screen, setScreen] = useState('menu');
@@ -26,7 +27,11 @@ function App() {
               <div key={char.id} className="char-card">
                 <h3>{char.name}</h3>
                 <p>{char.desc}</p>
-                <button className="select-btn" onClick={() => alert(`Selected ${char.name}`)}>
+                <button className="select-btn" onClick={() => {
+                  alert(`Selected ${char.name}`);
+                  setScreen('points');
+                }}
+                  >
                   Choose {char.name.split(' ')[1]}
                 </button>
               </div>
@@ -38,6 +43,21 @@ function App() {
       </div>
     );
   }
+if (screen === 'points') {
+  return (
+    <div className="main-menu-container">
+      <div className="selection-overlay">
+        <h1 className="game-title">Allocate Your Points</h1>
+
+        <PointAllocation />
+
+        <button className="back-link" onClick={() => setScreen('charSelect')}>
+          Back to Character Select
+        </button>
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="main-menu-container">
