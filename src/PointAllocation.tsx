@@ -1,4 +1,10 @@
 import { useState } from "react";
+type Props = {
+  onNext: () => void;
+};
+
+export default function PointAllocation({ onNext }: Props) {
+
 
 type Attributes = {
   strength: number;
@@ -71,13 +77,21 @@ return (
       );
     })}
 
-    <button
-      className="select-btn"
-      style={{ marginTop: "20px" }}
-      onClick={reset}
-    >
-      Reset
-    </button>
+<button
+  className="select-btn"
+  style={{ marginTop: "20px" }}
+  onClick={reset}
+>
+  Reset
+</button>
+
+<button
+  className="select-btn"
+  style={{ marginTop: "10px" }}
+  onClick={onNext}
+>
+  Continue
+</button>
   </>
 );
 }
