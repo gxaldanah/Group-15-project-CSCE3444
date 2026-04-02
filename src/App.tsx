@@ -52,9 +52,7 @@ if (screen === 'points') {
           Distribute your points to shape your abilities.
         </p>
 
-        <div className="character-grid">
-          <PointAllocation onNext={() => setScreen('nextScreen')} />
-        </div>
+        <PointAllocation onNext={() => setScreen('nextScreen')} />
 
         <button
           className="back-link"
