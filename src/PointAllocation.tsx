@@ -45,24 +45,39 @@ export default function PointAllocation() {
     });
   };
 
-  return (
-    <div>
-      <p>Points Left: {points}</p>
+return (
+  <>
+    <p className="game-subtitle">Points Left: {points}</p>
 
-      {Object.keys(stats).map((key) => {
-        const attr = key as keyof Attributes;
+    {Object.keys(stats).map((key) => {
+      const attr = key as keyof Attributes;
 
-        return (
-          <div key={attr}>
+      return (
+        <div className="char-card" key={attr}>
+          <h3>
             {attr.charAt(0).toUpperCase() + attr.slice(1)}
+          </h3>
+
+          <div style={{ marginTop: "10px" }}>
             <button onClick={() => updateStat(attr, -1)}>-</button>
-            <span>{stats[attr]}</span>
+
+            <span style={{ margin: "0 15px" }}>
+              {stats[attr]}
+            </span>
+
             <button onClick={() => updateStat(attr, 1)}>+</button>
           </div>
-        );
-      })}
+        </div>
+      );
+    })}
 
-      <button onClick={reset}>Reset</button>
-    </div>
-  );
+    <button
+      className="select-btn"
+      style={{ marginTop: "20px" }}
+      onClick={reset}
+    >
+      Reset
+    </button>
+  </>
+);
 }
