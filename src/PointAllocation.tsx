@@ -1,10 +1,8 @@
 import { useState } from "react";
+
 type Props = {
   onNext: () => void;
 };
-
-export default function PointAllocation({ onNext }: Props) {
-
 
 type Attributes = {
   strength: number;
@@ -14,7 +12,7 @@ type Attributes = {
   luck: number;
 };
 
-export default function PointAllocation() {
+export default function PointAllocation({ onNext }: Props) {
   const [points, setPoints] = useState(20);
 
   const [stats, setStats] = useState<Attributes>({
@@ -26,10 +24,7 @@ export default function PointAllocation() {
   });
 
   const updateStat = (attr: keyof Attributes, change: number) => {
-    // prevent overspending
     if (change > 0 && points <= 0) return;
-
-    // prevent going below 0
     if (change < 0 && stats[attr] <= 0) return;
 
     setStats((prev) => ({
@@ -51,47 +46,32 @@ export default function PointAllocation() {
     });
   };
 
-return (
-  <>
-    <p className="game-subtitle">Points Left: {points}</p>
+  return (
+    <>
+      <p className="game-subtitle">Points Left: {points}</p>
 
-    {Object.keys(stats).map((key) => {
-      const attr = key as keyof Attributes;
+      {Object.keys(stats).map((key) => {
+        const attr = key as keyof Attributes;
+        return (
+          <div className="char-card" key={attr}>
+            <h3>{attr.charAt(0).toUpperCase() + attr.slice(1)}</h3>
 
-      return (
-        <div className="char-card" key={attr}>
-          <h3>
-            {attr.charAt(0).toUpperCase() + attr.slice(1)}
-          </h3>
-
-          <div style={{ marginTop: "10px" }}>
-            <button onClick={() => updateStat(attr, -1)}>-</button>
-
-            <span style={{ margin: "0 15px" }}>
-              {stats[attr]}
-            </span>
-
-            <button onClick={() => updateStat(attr, 1)}>+</button>
+            <div style={{ marginTop: "10px" }}>
+              <button onClick={() => updateStat(attr, -1)}>-</button>
+              <span style={{ margin: "0 15px" }}>{stats[attr]}</span>
+              <button onClick={() => updateStat(attr, 1)}>+</button>
+            </div>
           </div>
-        </div>
-      );
-    })}
+        );
+      })}
 
-<button
-  className="select-btn"
-  style={{ marginTop: "20px" }}
-  onClick={reset}
->
-  Reset
-</button>
+      <button className="select-btn" style={{ marginTop: "20px" }} onClick={reset}>
+        Reset
+      </button>
 
-<button
-  className="select-btn"
-  style={{ marginTop: "10px" }}
-  onClick={onNext}
->
-  Continue
-</button>
-  </>
-);
+      <button className="select-btn" style={{ marginTop: "10px" }} onClick={onNext}>
+        Continue
+      </button>
+    </>
+  );
 }
