@@ -48,10 +48,18 @@ if (screen === 'points') {
     <div className="main-menu-container">
       <div className="selection-overlay">
         <h1 className="game-title">Allocate Your Points</h1>
+        <p className="game-subtitle">
+          Distribute your points to shape your abilities.
+        </p>
 
-        <PointAllocation />
+        <div className="character-grid">
+          <PointAllocation onNext={() => setScreen('nextScreen')} />
+        </div>
 
-        <button className="back-link" onClick={() => setScreen('charSelect')}>
+        <button
+          className="back-link"
+          onClick={() => setScreen('charSelect')}
+        >
           Back to Character Select
         </button>
       </div>
