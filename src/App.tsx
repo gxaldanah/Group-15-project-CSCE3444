@@ -17,15 +17,15 @@ function App() {
 
   if (screen === 'charSelect') {
     return (
-      <div className="main-menu-container">
-        <div className="selection-overlay">
+      <main className="main-menu-container">
+        <section className="selection-overlay" aria-labelledby="character-select-title">
           <h1 className="game-title">Choose Your Character</h1>
           <p className="game-subtitle">Each character has unique strengths that will shape your journey.</p>
           
           <div className="character-grid">
             {characters.map((char) => (
-              <div key={char.id} className="char-card">
-                <h3>{char.name}</h3>
+              <article key={char.id} className="char-card">
+                <h2>{char.name}</h2>
                 <p>{char.desc}</p>
                 <button className="select-btn" onClick={() => {
                   alert(`Selected ${char.name}`);
@@ -34,19 +34,19 @@ function App() {
                   >
                   Choose {char.name.split(' ')[1]}
                 </button>
-              </div>
+              </article>
             ))}
           </div>
 
           <button className="back-link" onClick={() => setScreen('menu')}>Back to Menu</button>
-        </div>
-      </div>
+        </section>
+      </main>
     );
   }
 if (screen === 'points') {
   return (
-    <div className="main-menu-container">
-      <div className="selection-overlay">
+    <main className="main-menu-container">
+      <section className="selection-overlay">
         <h1 className="game-title">Allocate Your Points</h1>
         <p className="game-subtitle">
           Distribute your points to shape your abilities.
@@ -60,14 +60,14 @@ if (screen === 'points') {
         >
           Back to Character Select
         </button>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
 
   return (
-    <div className="main-menu-container">
-      <div className="menu-card">
+    <main className="main-menu-container">
+      <section className="menu-card">
         <h1 className="game-title">Forge Your Destiny</h1>
         <br />
         <p className="game-subtitle">Shape your story through your choices.</p>
@@ -77,8 +77,8 @@ if (screen === 'points') {
           </button>
           <button className="menu-button load-button" disabled>No Saved Games</button>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
 
