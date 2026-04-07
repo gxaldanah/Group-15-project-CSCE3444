@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidStats(stats) {
+      return stats is map
+        && stats.keys().hasOnly(['strength', 'intelligence', 'charisma', 'agility', 'luck'])
+        && stats.strength is number && stats.strength >= 0 && stats.strength <= 20
+        && stats.intelligence is number && stats.intelligence >= 0 && stats.intelligence <= 20
+        && stats.charisma is number && stats.charisma >= 0 && stats.charisma <= 20
+        && stats.agility is number && stats.agility >= 0 && stats.agility <= 20
+        && stats.luck is number && stats.luck >= 0 && stats.luck <= 20;
+    }
+
+    function isValidGameProgress(data) {
+      return hasOnlyAllowedFields(['screen', 'selectedCharacterId', 'pointsLeft', 'stats', 'updatedAt'])
+        && data.screen is string
+        && data.screen in ['points', 'nextScreen']
+        && data.selectedCharacterId is string
+        && data.selectedCharacterId.size() > 0
+        && data.pointsLeft is number
+        && data.pointsLeft >= 0
+        && data.pointsLeft <= 20
+        && isValidStats(data.stats)
+        && data.updatedAt is timestamp
+        && data.updatedAt <= request.time
+        && data.updatedAt > request.time - duration.value(5, 'm');
+    }
+
+    match /gameProgress/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidGameProgress(request.resource.data);
+      allow update: if isOwner(userId) && isValidGameProgress(request.resource.data);
+      allow delete: if isOwner(userId);
+    }
+  }
+}
