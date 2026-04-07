@@ -254,10 +254,29 @@ function App() {
   if (screen === 'nextScreen') {
     const selectedCharacter = characters.find((character) => character.id === selectedCharacterId);
 
+    if (!selectedCharacter) {
+      return (
+        <div className="main-menu-container">
+          <div className="selection-overlay">
+            <h1 className="game-title">Continue Your Journey</h1>
+            <p className="game-subtitle">Select a character to begin this chapter.</p>
+            <div className="button-group">
+              <button className="menu-button start-button" onClick={() => setScreen('charSelect')}>
+                Choose Character
+              </button>
+              <button className="menu-button load-button" onClick={() => setScreen('menu')}>
+                Return to Menu
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <NextChapter
-        characterId={selectedCharacter?.id ?? 'unknown'}
-        characterName={selectedCharacter?.name ?? 'Your Hero'}
+        characterId={selectedCharacter.id}
+        characterName={selectedCharacter.name}
         pointsLeft={pointsLeft}
         stats={stats}
         initialSceneId={chapterSceneId}

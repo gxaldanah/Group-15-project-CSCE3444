@@ -4,20 +4,31 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   width: 100%;
   min-height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
   background: linear-gradient(to bottom, #1a0b2e, #4a148c);
   font-family: Arial, sans-serif;
+}
+
+html,
+body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 .main-menu-container {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   padding: 16px;
 }
 
@@ -78,6 +89,7 @@ html, body, #root {
   max-width: 1200px;
   text-align: center;
   padding: 20px;
+  overflow-wrap: anywhere;
 }
 
 .character-grid {
