@@ -24,7 +24,7 @@ service cloud.firestore {
     }
 
     function isValidGameProgress(data) {
-      return hasOnlyAllowedFields(['screen', 'selectedCharacterId', 'pointsLeft', 'stats', 'updatedAt'])
+      return hasOnlyAllowedFields(['screen', 'selectedCharacterId', 'pointsLeft', 'chapterSceneId', 'stats', 'updatedAt'])
         && data.screen is string
         && data.screen in ['points', 'nextScreen']
         && data.selectedCharacterId is string
@@ -32,6 +32,8 @@ service cloud.firestore {
         && data.pointsLeft is number
         && data.pointsLeft >= 0
         && data.pointsLeft <= 20
+        && data.chapterSceneId is string
+        && data.chapterSceneId in ['arrival', 'villageNow', 'observe']
         && isValidStats(data.stats)
         && data.updatedAt is timestamp
         && data.updatedAt <= request.time

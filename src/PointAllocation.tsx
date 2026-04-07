@@ -52,7 +52,7 @@ export default function PointAllocation({
         Points Left: {points}
       </p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '480px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: 'min(480px, 100%)' }}>
         {Object.keys(stats).map((key) => {
           const attr = key as keyof Attributes;
 

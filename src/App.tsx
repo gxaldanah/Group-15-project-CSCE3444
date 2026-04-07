@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import PointAllocation from './PointAllocation';
+import NextChapter from './NextChapter';
 import { firebaseAuth, firebaseDb, hasFirebaseConfig } from './firebase.ts';
 import { type User, onAuthStateChanged, signInAnonymously, signOut } from 'firebase/auth';
 import {
   loadGameProgress,
   saveGameProgress,
   type Attributes,
+  type ChapterSceneId,
   defaultAttributes,
+  defaultChapterSceneId,
   defaultPoints,
   isGameScreen,
 } from './gameProgress.ts';
@@ -21,6 +24,7 @@ function App() {
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
   const [pointsLeft, setPointsLeft] = useState(defaultPoints);
   const [stats, setStats] = useState<Attributes>(defaultAttributes);
+  const [chapterSceneId, setChapterSceneId] = useState<ChapterSceneId>(defaultChapterSceneId);
   const [savedProgressAvailable, setSavedProgressAvailable] = useState(false);
   const [progressStatus, setProgressStatus] = useState<string | null>(null);
   const [progressError, setProgressError] = useState<string | null>(null);
@@ -29,6 +33,7 @@ function App() {
     selectedCharacterId: string;
     pointsLeft: number;
     stats: Attributes;
+    chapterSceneId: ChapterSceneId;
   }>(null);
   const progressHydratedRef = useRef(false);
 
@@ -47,6 +52,7 @@ function App() {
       savedProgressRef.current = null;
       progressHydratedRef.current = false;
       setSavedProgressAvailable(false);
+      setChapterSceneId(defaultChapterSceneId);
       return;
     }
 
@@ -60,6 +66,7 @@ function App() {
 
         if (progress) {
           savedProgressRef.current = progress;
+          setChapterSceneId(progress.chapterSceneId);
           setSavedProgressAvailable(true);
           setProgressStatus('Saved progress ready.');
         } else {
@@ -101,6 +108,7 @@ function App() {
         selectedCharacterId,
         pointsLeft,
         stats,
+        chapterSceneId,
       })
         .then(() => {
           savedProgressRef.current = {
@@ -108,6 +116,7 @@ function App() {
             selectedCharacterId,
             pointsLeft,
             stats,
+            chapterSceneId,
           };
           setSavedProgressAvailable(true);
           setProgressStatus('Progress saved.');
@@ -119,7 +128,7 @@ function App() {
     }, 400);
 
     return () => window.clearTimeout(timeoutId);
-  }, [pointsLeft, screen, selectedCharacterId, stats, user]);
+  }, [chapterSceneId, pointsLeft, screen, selectedCharacterId, stats, user]);
 
   const handleGuestSignIn = async () => {
     if (!firebaseAuth || !hasFirebaseConfig) {
@@ -152,6 +161,7 @@ function App() {
     setSelectedCharacterId(characterId);
     setPointsLeft(defaultPoints);
     setStats(defaultAttributes);
+    setChapterSceneId(defaultChapterSceneId);
     setScreen('points');
   };
 
@@ -165,6 +175,7 @@ function App() {
     setSelectedCharacterId(progress.selectedCharacterId);
     setPointsLeft(progress.pointsLeft);
     setStats(progress.stats);
+    setChapterSceneId(progress.chapterSceneId);
     setScreen(progress.screen);
   };
 
@@ -172,6 +183,7 @@ function App() {
     setSelectedCharacterId(null);
     setPointsLeft(defaultPoints);
     setStats(defaultAttributes);
+    setChapterSceneId(defaultChapterSceneId);
     setScreen('charSelect');
   };
 
@@ -230,6 +242,7 @@ function App() {
             onContinue={(nextPoints, nextStats) => {
               setPointsLeft(nextPoints);
               setStats(nextStats);
+              setChapterSceneId(defaultChapterSceneId);
               setScreen('nextScreen');
             }}
           />
@@ -242,22 +255,16 @@ function App() {
     const selectedCharacter = characters.find((character) => character.id === selectedCharacterId);
 
     return (
-      <div className="main-menu-container">
-        <div className="selection-overlay">
-          <h1 className="game-title">Your Journey Continues</h1>
-          <p className="game-subtitle">
-            {selectedCharacter ? `${selectedCharacter.name} is ready to face the next chapter.` : 'Your story is ready for the next chapter.'}
-          </p>
-          <p className="game-subtitle" style={{ fontSize: '0.95rem', opacity: 0.85 }}>
-            Points remaining: {pointsLeft}
-          </p>
-          <div className="button-group">
-            <button className="menu-button start-button" onClick={() => setScreen('menu')}>
-              Return to Menu
-            </button>
-          </div>
-        </div>
-      </div>
+      <NextChapter
+        characterId={selectedCharacter?.id ?? 'unknown'}
+        characterName={selectedCharacter?.name ?? 'Your Hero'}
+        pointsLeft={pointsLeft}
+        stats={stats}
+        initialSceneId={chapterSceneId}
+        onSceneChange={setChapterSceneId}
+        onReturnToMenu={() => setScreen('menu')}
+        onReallocate={() => setScreen('points')}
+      />
     );
   }
 
