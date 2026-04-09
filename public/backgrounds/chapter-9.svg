@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22162f"/>
+      <stop offset="100%" stop-color="#3f2d63"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#g)"/>
+  <circle cx="800" cy="430" r="230" fill="#8f74db" opacity="0.14"/>
+  <path d="M800 190 L920 430 L800 670 L680 430 Z" fill="#bea8ff" opacity="0.55"/>
+  <path d="M0 900 L260 610 L430 820 L740 520 L1060 850 L1320 580 L1600 900 Z" fill="#2f214b"/>
+  <text x="80" y="830" fill="#e6dcff" font-size="42" font-family="Georgia, serif">Chapter 9 - The Broken Seal</text>
+</svg>

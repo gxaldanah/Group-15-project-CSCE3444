@@ -9,8 +9,10 @@ import {
   saveGameProgress,
   type Attributes,
   type ChapterSceneId,
+  type ChoiceStyleProfile,
   defaultAttributes,
   defaultChapterSceneId,
+  defaultChoiceStyleProfile,
   defaultPoints,
   isGameScreen,
 } from './gameProgress.ts';
@@ -25,15 +27,18 @@ function App() {
   const [pointsLeft, setPointsLeft] = useState(defaultPoints);
   const [stats, setStats] = useState<Attributes>(defaultAttributes);
   const [chapterSceneId, setChapterSceneId] = useState<ChapterSceneId>(defaultChapterSceneId);
+  const [choiceStyleProfile, setChoiceStyleProfile] = useState<ChoiceStyleProfile>(defaultChoiceStyleProfile);
   const [savedProgressAvailable, setSavedProgressAvailable] = useState(false);
   const [progressStatus, setProgressStatus] = useState<string | null>(null);
   const [progressError, setProgressError] = useState<string | null>(null);
+  const [manualSaveInProgress, setManualSaveInProgress] = useState(false);
   const savedProgressRef = useRef<null | {
     screen: Exclude<Screen, 'menu' | 'charSelect'>;
     selectedCharacterId: string;
     pointsLeft: number;
     stats: Attributes;
     chapterSceneId: ChapterSceneId;
+    choiceStyleProfile: ChoiceStyleProfile;
   }>(null);
   const progressHydratedRef = useRef(false);
 
@@ -53,6 +58,7 @@ function App() {
       progressHydratedRef.current = false;
       setSavedProgressAvailable(false);
       setChapterSceneId(defaultChapterSceneId);
+      setChoiceStyleProfile(defaultChoiceStyleProfile);
       return;
     }
 
@@ -67,6 +73,7 @@ function App() {
         if (progress) {
           savedProgressRef.current = progress;
           setChapterSceneId(progress.chapterSceneId);
+          setChoiceStyleProfile(progress.choiceStyleProfile);
           setSavedProgressAvailable(true);
           setProgressStatus('Saved progress ready.');
         } else {
@@ -109,6 +116,7 @@ function App() {
         pointsLeft,
         stats,
         chapterSceneId,
+        choiceStyleProfile,
       })
         .then(() => {
           savedProgressRef.current = {
@@ -117,6 +125,7 @@ function App() {
             pointsLeft,
             stats,
             chapterSceneId,
+            choiceStyleProfile,
           };
           setSavedProgressAvailable(true);
           setProgressStatus('Progress saved.');
@@ -128,7 +137,45 @@ function App() {
     }, 400);
 
     return () => window.clearTimeout(timeoutId);
-  }, [chapterSceneId, pointsLeft, screen, selectedCharacterId, stats, user]);
+  }, [chapterSceneId, choiceStyleProfile, pointsLeft, screen, selectedCharacterId, stats, user]);
+
+  const handleManualSave = async () => {
+    const db = firebaseDb;
+
+    if (!db || !user || !selectedCharacterId || !isGameScreen(screen)) {
+      setProgressError('Sign in and start a game before saving.');
+      return;
+    }
+
+    setManualSaveInProgress(true);
+    setProgressError(null);
+
+    try {
+      await saveGameProgress(db, user.uid, {
+        screen,
+        selectedCharacterId,
+        pointsLeft,
+        stats,
+        chapterSceneId,
+        choiceStyleProfile,
+      });
+
+      savedProgressRef.current = {
+        screen,
+        selectedCharacterId,
+        pointsLeft,
+        stats,
+        chapterSceneId,
+        choiceStyleProfile,
+      };
+      setSavedProgressAvailable(true);
+      setProgressStatus('Game saved. You can safely resume later.');
+    } catch (error) {
+      setProgressError(error instanceof Error ? error.message : 'Failed to save progress.');
+    } finally {
+      setManualSaveInProgress(false);
+    }
+  };
 
   const handleGuestSignIn = async () => {
     if (!firebaseAuth || !hasFirebaseConfig) {
@@ -162,6 +209,7 @@ function App() {
     setPointsLeft(defaultPoints);
     setStats(defaultAttributes);
     setChapterSceneId(defaultChapterSceneId);
+    setChoiceStyleProfile(defaultChoiceStyleProfile);
     setScreen('points');
   };
 
@@ -176,6 +224,7 @@ function App() {
     setPointsLeft(progress.pointsLeft);
     setStats(progress.stats);
     setChapterSceneId(progress.chapterSceneId);
+    setChoiceStyleProfile(progress.choiceStyleProfile);
     setScreen(progress.screen);
   };
 
@@ -184,6 +233,7 @@ function App() {
     setPointsLeft(defaultPoints);
     setStats(defaultAttributes);
     setChapterSceneId(defaultChapterSceneId);
+    setChoiceStyleProfile(defaultChoiceStyleProfile);
     setScreen('charSelect');
   };
 
@@ -246,6 +296,16 @@ function App() {
               setScreen('nextScreen');
             }}
           />
+
+          <div className="button-group" style={{ marginTop: '1rem' }}>
+            <button
+              className="menu-button load-button"
+              onClick={() => void handleManualSave()}
+              disabled={manualSaveInProgress || !user || !hasFirebaseConfig}
+            >
+              {manualSaveInProgress ? 'Saving...' : 'Save Game'}
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -279,6 +339,12 @@ function App() {
         characterName={selectedCharacter.name}
         pointsLeft={pointsLeft}
         stats={stats}
+        onStatsChange={setStats}
+        choiceStyleProfile={choiceStyleProfile}
+        onChoiceStyleProfileChange={setChoiceStyleProfile}
+        onSaveGame={() => void handleManualSave()}
+        saveInProgress={manualSaveInProgress}
+        canSave={Boolean(user && hasFirebaseConfig)}
         initialSceneId={chapterSceneId}
         onSceneChange={setChapterSceneId}
         onReturnToMenu={() => setScreen('menu')}
@@ -319,7 +385,7 @@ function App() {
               Sign Out
             </button>
           ) : (
-            <button className="menu-button load-button" onClick={handleGuestSignIn} disabled={!hasFirebaseConfig}>
+            <button className="menu-button load-button" onClick={handleGuestSignIn}>
               Play as Guest
             </button>
           )}

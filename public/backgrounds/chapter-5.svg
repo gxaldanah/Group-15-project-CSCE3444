@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1f2a38"/>
+      <stop offset="100%" stop-color="#526c85"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#g)"/>
+  <path d="M0 760 L230 460 L420 700 L650 370 L880 680 L1100 350 L1380 760 Z" fill="#31465d"/>
+  <path d="M420 900 L620 520 L760 640 L930 480 L1100 900 Z" fill="#6b7f96" opacity="0.75"/>
+  <text x="80" y="830" fill="#e4edf7" font-size="42" font-family="Georgia, serif">Chapter 5 - Crossing the Grey Pass</text>
+</svg>

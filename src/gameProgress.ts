@@ -1,7 +1,7 @@
 import { doc, getDoc, serverTimestamp, setDoc, type Firestore } from 'firebase/firestore';
 
 export type GameScreen = 'points' | 'nextScreen';
-export type ChapterSceneId = 'arrival' | 'villageNow' | 'observe';
+export type ChapterSceneId = string;
 
 export type Attributes = {
   strength: number;
@@ -11,12 +11,18 @@ export type Attributes = {
   luck: number;
 };
 
+export type ChoiceStyleProfile = {
+  bold: number;
+  careful: number;
+};
+
 export type GameProgress = {
   screen: GameScreen;
   selectedCharacterId: string;
   pointsLeft: number;
   stats: Attributes;
   chapterSceneId: ChapterSceneId;
+  choiceStyleProfile: ChoiceStyleProfile;
 };
 
 export const defaultAttributes: Attributes = {
@@ -28,14 +34,26 @@ export const defaultAttributes: Attributes = {
 };
 
 export const defaultPoints = 20;
-export const defaultChapterSceneId: ChapterSceneId = 'arrival';
+export const defaultChapterSceneId: ChapterSceneId = 'chapter1_start';
+export const defaultChoiceStyleProfile: ChoiceStyleProfile = {
+  bold: 0,
+  careful: 0,
+};
 
 export function isGameScreen(value: string): value is GameScreen {
   return value === 'points' || value === 'nextScreen';
 }
 
 export function isChapterSceneId(value: string): value is ChapterSceneId {
-  return value === 'arrival' || value === 'villageNow' || value === 'observe';
+  return value.trim().length > 0;
+}
+
+function normalizeChapterSceneId(value: string): ChapterSceneId {
+  if (value === 'arrival' || value === 'villageNow' || value === 'observe') {
+    return 'chapter1_start';
+  }
+
+  return value;
 }
 
 export async function loadGameProgress(db: Firestore, userId: string): Promise<GameProgress | null> {
@@ -59,9 +77,10 @@ export async function loadGameProgress(db: Firestore, userId: string): Promise<G
   }
 
   const stats = data.stats as Attributes;
+  const profile = (data.choiceStyleProfile ?? {}) as Partial<ChoiceStyleProfile>;
   const chapterSceneId =
     typeof data.chapterSceneId === 'string' && isChapterSceneId(data.chapterSceneId)
-      ? data.chapterSceneId
+      ? normalizeChapterSceneId(data.chapterSceneId)
       : defaultChapterSceneId;
 
   return {
@@ -69,6 +88,10 @@ export async function loadGameProgress(db: Firestore, userId: string): Promise<G
     selectedCharacterId: data.selectedCharacterId,
     pointsLeft: data.pointsLeft,
     chapterSceneId,
+    choiceStyleProfile: {
+      bold: Number(profile.bold) || 0,
+      careful: Number(profile.careful) || 0,
+    },
     stats: {
       strength: Number(stats.strength) || 0,
       intelligence: Number(stats.intelligence) || 0,
@@ -91,6 +114,7 @@ export async function saveGameProgress(
       selectedCharacterId: progress.selectedCharacterId,
       pointsLeft: progress.pointsLeft,
       chapterSceneId: progress.chapterSceneId,
+      choiceStyleProfile: progress.choiceStyleProfile,
       stats: progress.stats,
       updatedAt: serverTimestamp(),
     },

@@ -23,8 +23,26 @@ service cloud.firestore {
         && stats.luck is number && stats.luck >= 0 && stats.luck <= 20;
     }
 
+    function isValidChoiceStyleProfile(profile) {
+      return profile is map
+        && profile.keys().hasOnly(['bold', 'careful'])
+        && profile.bold is number && profile.bold >= 0 && profile.bold <= 10
+        && profile.careful is number && profile.careful >= 0 && profile.careful <= 10;
+    }
+
+    function isValidChapterSceneId(chapterSceneId) {
+      return chapterSceneId is string
+        && chapterSceneId.size() > 0
+        && chapterSceneId.size() <= 40
+        && (
+          chapterSceneId.matches('^chapter([1-9]|10)_start$')
+          || chapterSceneId == 'ending'
+          || chapterSceneId in ['arrival', 'villageNow', 'observe']
+        );
+    }
+
     function isValidGameProgress(data) {
-      return hasOnlyAllowedFields(['screen', 'selectedCharacterId', 'pointsLeft', 'chapterSceneId', 'stats', 'updatedAt'])
+      return hasOnlyAllowedFields(['screen', 'selectedCharacterId', 'pointsLeft', 'chapterSceneId', 'choiceStyleProfile', 'stats', 'updatedAt'])
         && data.screen is string
         && data.screen in ['points', 'nextScreen']
         && data.selectedCharacterId is string
@@ -32,8 +50,8 @@ service cloud.firestore {
         && data.pointsLeft is number
         && data.pointsLeft >= 0
         && data.pointsLeft <= 20
-        && data.chapterSceneId is string
-        && data.chapterSceneId in ['arrival', 'villageNow', 'observe']
+        && isValidChapterSceneId(data.chapterSceneId)
+        && isValidChoiceStyleProfile(data.choiceStyleProfile)
         && isValidStats(data.stats)
         && data.updatedAt is timestamp
         && data.updatedAt <= request.time
