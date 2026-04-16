@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
+    <defs>
+      <linearGradient id="hallSky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#e8d5c4"/>
+        <stop offset="100%" stop-color="#d4a574"/>
+      </linearGradient>
+      <linearGradient id="marble" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#f5f5f0" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#e0ddd6"/>
+      </linearGradient>
+    </defs>
+    <rect width="1920" height="1080" fill="url(#hallSky)"/>
+    <rect y="700" width="1920" height="380" fill="url(#marble)"/>
+    <g opacity="0.3">
+      <line x1="0" y1="700" x2="1920" y2="700" stroke="#8b7355" stroke-width="2"/>
+      <line x1="0" y1="750" x2="1920" y2="750" stroke="#8b7355" stroke-width="1"/>
+      <line x1="0" y1="800" x2="1920" y2="800" stroke="#8b7355" stroke-width="1"/>
+    </g>
+    <rect x="200" y="350" width="60" height="730" fill="#c9a780"/>
+    <rect x="850" y="350" width="60" height="730" fill="#c9a780"/>
+    <rect x="1500" y="350" width="60" height="730" fill="#c9a780"/>
+    <polygon points="200,340 980,340 1020,360 220,360" fill="#b8956a"/>
+    <polygon points="850,340 1630,340 1670,360 870,360" fill="#b8956a"/>
+    <path d="M 500 200 L 500 450 L 450 450 L 450 200" fill="#d4af37" opacity="0.9"/>
+    <path d="M 500 200 L 500 450 L 550 450 L 550 200" fill="#8b4513" opacity="0.9"/>
+    <circle cx="500" cy="280" r="40" fill="#e8d5c4" opacity="0.8"/>
+    <text x="1000" y="300" font-size="80" font-family="serif" fill="#8b4513" opacity="0.6">Nobility</text>
+    <circle cx="100" cy="400" r="15" fill="#ff6b35" opacity="0.8"/>
+    <circle cx="1820" cy="400" r="15" fill="#ff6b35" opacity="0.8"/>
+    <path d="M 300 600 Q 400 550 500 600" stroke="#8b4513" stroke-width="3" fill="none" opacity="0.5"/>
+    <path d="M 1700 600 Q 1600 550 1500 600" stroke="#8b4513" stroke-width="3" fill="none" opacity="0.5"/>
+  </svg>

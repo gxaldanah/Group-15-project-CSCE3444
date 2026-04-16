@@ -19,6 +19,13 @@ import {
 
 type Screen = 'menu' | 'charSelect' | 'points' | 'nextScreen';
 
+type CharacterOption = {
+  id: string;
+  name: string;
+  desc: string;
+  baseStats: Attributes;
+};
+
 function App() {
   const [screen, setScreen] = useState<Screen>('menu');
   const [user, setUser] = useState<User | null>(null);
@@ -26,6 +33,8 @@ function App() {
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
   const [pointsLeft, setPointsLeft] = useState(defaultPoints);
   const [stats, setStats] = useState<Attributes>(defaultAttributes);
+  const [runBaselinePoints, setRunBaselinePoints] = useState(defaultPoints);
+  const [runBaselineStats, setRunBaselineStats] = useState<Attributes>(defaultAttributes);
   const [chapterSceneId, setChapterSceneId] = useState<ChapterSceneId>(defaultChapterSceneId);
   const [choiceStyleProfile, setChoiceStyleProfile] = useState<ChoiceStyleProfile>(defaultChoiceStyleProfile);
   const [savedProgressAvailable, setSavedProgressAvailable] = useState(false);
@@ -205,12 +214,20 @@ function App() {
   };
 
   const handleSelectCharacter = (characterId: string) => {
+    const selectedCharacter = characters.find((character) => character.id === characterId);
+
+    if (!selectedCharacter) {
+      return;
+    }
+
     setSelectedCharacterId(characterId);
-    setPointsLeft(defaultPoints);
-    setStats(defaultAttributes);
+    setPointsLeft(0);
+    setStats(selectedCharacter.baseStats);
+    setRunBaselinePoints(0);
+    setRunBaselineStats(selectedCharacter.baseStats);
     setChapterSceneId(defaultChapterSceneId);
     setChoiceStyleProfile(defaultChoiceStyleProfile);
-    setScreen('points');
+    setScreen('nextScreen');
   };
 
   const handleResumeGame = () => {
@@ -223,6 +240,8 @@ function App() {
     setSelectedCharacterId(progress.selectedCharacterId);
     setPointsLeft(progress.pointsLeft);
     setStats(progress.stats);
+    setRunBaselinePoints(progress.pointsLeft);
+    setRunBaselineStats(progress.stats);
     setChapterSceneId(progress.chapterSceneId);
     setChoiceStyleProfile(progress.choiceStyleProfile);
     setScreen(progress.screen);
@@ -232,19 +251,51 @@ function App() {
     setSelectedCharacterId(null);
     setPointsLeft(defaultPoints);
     setStats(defaultAttributes);
+    setRunBaselinePoints(defaultPoints);
+    setRunBaselineStats(defaultAttributes);
     setChapterSceneId(defaultChapterSceneId);
     setChoiceStyleProfile(defaultChoiceStyleProfile);
     setScreen('charSelect');
   };
 
   // Character Data from Sprint 1 Report [cite: 76-95]
-  const characters = [
-    { id: 'warrior', name: 'The Warrior', desc: 'A brave fighter who leads with strength and courage.' },
-    { id: 'diplomat', name: 'The Diplomat', desc: 'A wise negotiator who builds bridges through trust.' },
-    { id: 'guardian', name: 'The Guardian', desc: 'A balanced protector with steady abilities.' },
-    { id: 'mystic', name: 'The Mystic', desc: 'A seeker of ancient wisdom and hidden power.' },
-    { id: 'rogue', name: 'The Rogue', desc: 'A quick and clever adventurer who relies on agility.' },
-    { id: 'scholar', name: 'The Scholar', desc: 'A brilliant researcher with sharp insight.' }
+  const characters: CharacterOption[] = [
+    {
+      id: 'warrior',
+      name: 'The Warrior',
+      desc: 'A brave fighter who leads with strength and courage.',
+      baseStats: { strength: 11, intelligence: 5, charisma: 4, agility: 6, luck: 4 },
+    },
+    {
+      id: 'diplomat',
+      name: 'The Diplomat',
+      desc: 'A wise negotiator who builds bridges through trust.',
+      baseStats: { strength: 4, intelligence: 7, charisma: 11, agility: 3, luck: 5 },
+    },
+    {
+      id: 'guardian',
+      name: 'The Guardian',
+      desc: 'A balanced protector with steady abilities.',
+      baseStats: { strength: 7, intelligence: 6, charisma: 6, agility: 6, luck: 5 },
+    },
+    {
+      id: 'mystic',
+      name: 'The Mystic',
+      desc: 'A seeker of ancient wisdom and hidden power.',
+      baseStats: { strength: 3, intelligence: 12, charisma: 5, agility: 3, luck: 7 },
+    },
+    {
+      id: 'rogue',
+      name: 'The Rogue',
+      desc: 'A quick and clever adventurer who relies on agility.',
+      baseStats: { strength: 5, intelligence: 5, charisma: 5, agility: 11, luck: 4 },
+    },
+    {
+      id: 'scholar',
+      name: 'The Scholar',
+      desc: 'A brilliant researcher with sharp insight.',
+      baseStats: { strength: 2, intelligence: 13, charisma: 6, agility: 3, luck: 6 },
+    },
   ];
 
   if (screen === 'charSelect') {
@@ -259,6 +310,9 @@ function App() {
               <article key={char.id} className="char-card">
                 <h3>{char.name}</h3>
                 <p>{char.desc}</p>
+                <p style={{ fontSize: '0.85rem', opacity: 0.85 }}>
+                  STR {char.baseStats.strength} | INT {char.baseStats.intelligence} | CHA {char.baseStats.charisma} | AGI {char.baseStats.agility} | LUCK {char.baseStats.luck}
+                </p>
                 <button className="select-btn" onClick={() => handleSelectCharacter(char.id)}>
                   Choose {char.name.split(' ')[1]}
                 </button>
@@ -292,7 +346,10 @@ function App() {
             onContinue={(nextPoints, nextStats) => {
               setPointsLeft(nextPoints);
               setStats(nextStats);
+              setRunBaselinePoints(nextPoints);
+              setRunBaselineStats(nextStats);
               setChapterSceneId(defaultChapterSceneId);
+              setChoiceStyleProfile(defaultChoiceStyleProfile);
               setScreen('nextScreen');
             }}
           />
@@ -348,7 +405,13 @@ function App() {
         initialSceneId={chapterSceneId}
         onSceneChange={setChapterSceneId}
         onReturnToMenu={() => setScreen('menu')}
-        onReallocate={() => setScreen('points')}
+        onTryAnotherPath={() => {
+          setPointsLeft(runBaselinePoints);
+          setStats(runBaselineStats);
+          setChoiceStyleProfile(defaultChoiceStyleProfile);
+          setChapterSceneId(defaultChapterSceneId);
+        }}
+        onReallocate={() => setScreen('charSelect')}
       />
     );
   }

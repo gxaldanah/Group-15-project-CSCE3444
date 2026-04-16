@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
+    <defs>
+      <linearGradient id="warSky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2a3f5f"/>
+        <stop offset="50%" stop-color="#5a6f8f"/>
+        <stop offset="100%" stop-color="#8a5f3f"/>
+      </linearGradient>
+      <linearGradient id="warGround" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#4a3f2f"/>
+        <stop offset="100%" stop-color="#2a1f1f"/>
+      </linearGradient>
+      <filter id="glow"><feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <rect width="1920" height="1080" fill="url(#warSky)"/>
+    <rect y="700" width="1920" height="380" fill="url(#warGround)"/>
+    <polygon points="0,800 400,400 800,700 1920,500 1920,1080 0,1080" fill="#3a3a3a" opacity="0.8"/>
+    <polygon points="200,900 600,500 950,850 1920,600 1920,1080 0,1080" fill="#4a4a4a" opacity="0.6"/>
+    <rect x="800" y="500" width="320" height="400" fill="#5a5a5a"/>
+    <rect x="850" y="480" width="220" height="50" fill="#7a7a7a"/>
+    <rect x="950" y="300" width="120" height="400" fill="#6a6a6a"/>
+    <polygon points="950,300 1010,200 1070,300" fill="#5a5a5a"/>
+    <rect x="970" y="350" width="20" height="25" fill="#ff6b35" filter="url(#glow)"/>
+    <rect x="1010" y="350" width="20" height="25" fill="#ff6b35" filter="url(#glow)"/>
+    <rect x="970" y="430" width="20" height="25" fill="#ff6b35" filter="url(#glow)"/>
+    <rect x="1010" y="430" width="20" height="25" fill="#ff6b35" filter="url(#glow)"/>
+    <path d="M 950 320 L 950 320 Q 980 330 1000 320" stroke="#ff6b35" stroke-width="15" fill="none"/>
+    <path d="M 1020 320 L 1020 320 Q 1050 330 1070 320" stroke="#8b0000" stroke-width="15" fill="none"/>
+    <circle cx="800" cy="480" r="8" fill="#ff6b35" filter="url(#glow)"/>
+    <circle cx="1120" cy="480" r="8" fill="#ff6b35" filter="url(#glow)"/>
+    <path d="M 800 475 Q 795 460 800 445 Q 805 460 800 475" fill="#ff6b35" opacity="0.7"/>
+    <path d="M 1120 475 Q 1115 460 1120 445 Q 1125 460 1120 475" fill="#ff6b35" opacity="0.7"/>
+    <ellipse cx="300" cy="150" rx="150" ry="60" fill="#a0a0a0" opacity="0.4"/>
+    <ellipse cx="1600" cy="200" rx="200" ry="70" fill="#808080" opacity="0.3"/>
+  </svg>

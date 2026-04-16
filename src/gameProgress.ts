@@ -33,7 +33,7 @@ export const defaultAttributes: Attributes = {
   luck: 0,
 };
 
-export const defaultPoints = 20;
+export const defaultPoints = 30;
 export const defaultChapterSceneId: ChapterSceneId = 'chapter1_start';
 export const defaultChoiceStyleProfile: ChoiceStyleProfile = {
   bold: 0,
