@@ -279,19 +279,21 @@ function getCharacterEnding(
 }
 
 function getSceneBackgroundPath(sceneId: ChapterSceneId, endingStyle: EndingStyle): string {
+  const version = '20260416-2';
   if (sceneId === 'ending') {
-    return `/backgrounds/ending-${endingStyle}.webp`;
+    return `/backgrounds/ending-${endingStyle}.webp?v=${version}`;
   }
 
   const chapterMatch = /^chapter(\d+)_start$/.exec(sceneId);
   if (chapterMatch) {
-    return `/backgrounds/chapter-${chapterMatch[1]}.webp`;
+    return `/backgrounds/chapter-${chapterMatch[1]}.webp?v=${version}`;
   }
 
-  return '/backgrounds/chapter-1.webp';
+  return `/backgrounds/chapter-1.webp?v=${version}`;
 }
 
 function getCharacterOverlayPath(characterId: string): string {
+  const version = '20260416-2';
   const supportedCharacters = new Set([
     'warrior',
     'diplomat',
@@ -302,13 +304,14 @@ function getCharacterOverlayPath(characterId: string): string {
   ]);
 
   if (supportedCharacters.has(characterId)) {
-    return `/backgrounds/overlay-${characterId}.webp`;
+    return `/backgrounds/overlay-${characterId}.webp?v=${version}`;
   }
 
-  return '/backgrounds/overlay-guardian.webp';
+  return `/backgrounds/overlay-guardian.webp?v=${version}`;
 }
 
 function getCharacterBackgroundPath(characterId: string): string {
+  const version = '20260416-2';
   const supportedCharacters = new Set([
     'warrior',
     'diplomat',
@@ -319,10 +322,10 @@ function getCharacterBackgroundPath(characterId: string): string {
   ]);
 
   if (supportedCharacters.has(characterId)) {
-    return `/backgrounds/bg-${characterId}.webp`;
+    return `/backgrounds/bg-${characterId}.webp?v=${version}`;
   }
 
-  return '/backgrounds/bg-guardian.webp';
+  return `/backgrounds/bg-guardian.webp?v=${version}`;
 }
 
 function toChapterTemplates(characterName: string, activeStory: {
