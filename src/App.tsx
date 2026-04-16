@@ -26,6 +26,47 @@ type CharacterOption = {
   baseStats: Attributes;
 };
 
+type StoredProgress = {
+  screen: Exclude<Screen, 'menu' | 'charSelect'>;
+  selectedCharacterId: string;
+  pointsLeft: number;
+  stats: Attributes;
+  chapterSceneId: ChapterSceneId;
+  choiceStyleProfile: ChoiceStyleProfile;
+};
+
+const localProgressKey = 'forge-destiny-progress-v1';
+
+function loadLocalProgress(): StoredProgress | null {
+  try {
+    const raw = window.localStorage.getItem(localProgressKey);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as Partial<StoredProgress>;
+    if (!parsed || typeof parsed !== 'object') return null;
+    if (!parsed.selectedCharacterId || typeof parsed.selectedCharacterId !== 'string') return null;
+    if (!parsed.screen || !isGameScreen(parsed.screen)) return null;
+    if (typeof parsed.pointsLeft !== 'number') return null;
+    if (!parsed.stats || typeof parsed.stats !== 'object') return null;
+    if (!parsed.chapterSceneId || typeof parsed.chapterSceneId !== 'string') return null;
+
+    return {
+      screen: parsed.screen,
+      selectedCharacterId: parsed.selectedCharacterId,
+      pointsLeft: parsed.pointsLeft,
+      stats: parsed.stats as Attributes,
+      chapterSceneId: parsed.chapterSceneId,
+      choiceStyleProfile: parsed.choiceStyleProfile ?? defaultChoiceStyleProfile,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function saveLocalProgress(progress: StoredProgress) {
+  window.localStorage.setItem(localProgressKey, JSON.stringify(progress));
+}
+
 function App() {
   const [screen, setScreen] = useState<Screen>('menu');
   const [user, setUser] = useState<User | null>(null);
@@ -41,14 +82,7 @@ function App() {
   const [progressStatus, setProgressStatus] = useState<string | null>(null);
   const [progressError, setProgressError] = useState<string | null>(null);
   const [manualSaveInProgress, setManualSaveInProgress] = useState(false);
-  const savedProgressRef = useRef<null | {
-    screen: Exclude<Screen, 'menu' | 'charSelect'>;
-    selectedCharacterId: string;
-    pointsLeft: number;
-    stats: Attributes;
-    chapterSceneId: ChapterSceneId;
-    choiceStyleProfile: ChoiceStyleProfile;
-  }>(null);
+  const savedProgressRef = useRef<StoredProgress | null>(null);
   const progressHydratedRef = useRef(false);
 
   useEffect(() => {
@@ -63,11 +97,18 @@ function App() {
 
   useEffect(() => {
     if (!firebaseDb || !user) {
-      savedProgressRef.current = null;
-      progressHydratedRef.current = false;
-      setSavedProgressAvailable(false);
-      setChapterSceneId(defaultChapterSceneId);
-      setChoiceStyleProfile(defaultChoiceStyleProfile);
+      const localProgress = loadLocalProgress();
+      savedProgressRef.current = localProgress;
+      setSavedProgressAvailable(Boolean(localProgress));
+      setProgressStatus(localProgress ? 'Local progress ready.' : 'No saved progress found.');
+      if (localProgress) {
+        setChapterSceneId(localProgress.chapterSceneId);
+        setChoiceStyleProfile(localProgress.choiceStyleProfile);
+      } else {
+        setChapterSceneId(defaultChapterSceneId);
+        setChoiceStyleProfile(defaultChoiceStyleProfile);
+      }
+      progressHydratedRef.current = true;
       return;
     }
 
@@ -106,9 +147,7 @@ function App() {
   }, [user]);
 
   useEffect(() => {
-    const db = firebaseDb;
-
-    if (!db || !user || !selectedCharacterId || !progressHydratedRef.current) {
+    if (!selectedCharacterId || !progressHydratedRef.current) {
       return;
     }
 
@@ -117,59 +156,53 @@ function App() {
     }
 
     const currentScreen = screen;
+    const progressPayload: StoredProgress = {
+      screen: currentScreen,
+      selectedCharacterId,
+      pointsLeft,
+      stats,
+      chapterSceneId,
+      choiceStyleProfile,
+    };
 
     const timeoutId = window.setTimeout(() => {
-      void saveGameProgress(db, user.uid, {
-        screen: currentScreen,
-        selectedCharacterId,
-        pointsLeft,
-        stats,
-        chapterSceneId,
-        choiceStyleProfile,
-      })
-        .then(() => {
-          savedProgressRef.current = {
-            screen: currentScreen,
-            selectedCharacterId,
-            pointsLeft,
-            stats,
-            chapterSceneId,
-            choiceStyleProfile,
-          };
-          setSavedProgressAvailable(true);
-          setProgressStatus('Progress saved.');
-          setProgressError(null);
-        })
-        .catch((error) => {
-          setProgressError(error instanceof Error ? error.message : 'Failed to save progress.');
-        });
+      if (firebaseDb && user) {
+        void saveGameProgress(firebaseDb, user.uid, progressPayload)
+          .then(() => {
+            savedProgressRef.current = progressPayload;
+            setSavedProgressAvailable(true);
+            setProgressStatus('Progress saved.');
+            setProgressError(null);
+          })
+          .catch(() => {
+            saveLocalProgress(progressPayload);
+            savedProgressRef.current = progressPayload;
+            setSavedProgressAvailable(true);
+            setProgressStatus('Saved locally (offline mode).');
+          });
+        return;
+      }
+
+      saveLocalProgress(progressPayload);
+      savedProgressRef.current = progressPayload;
+      setSavedProgressAvailable(true);
+      setProgressStatus('Saved locally (offline mode).');
     }, 400);
 
     return () => window.clearTimeout(timeoutId);
   }, [chapterSceneId, choiceStyleProfile, pointsLeft, screen, selectedCharacterId, stats, user]);
 
-  const handleManualSave = async () => {
-    const db = firebaseDb;
-
-    if (!db || !user || !selectedCharacterId || !isGameScreen(screen)) {
+  const handleManualSave = async (): Promise<boolean> => {
+    if (!selectedCharacterId || !isGameScreen(screen)) {
       setProgressError('Sign in and start a game before saving.');
-      return;
+      return false;
     }
 
     setManualSaveInProgress(true);
     setProgressError(null);
 
     try {
-      await saveGameProgress(db, user.uid, {
-        screen,
-        selectedCharacterId,
-        pointsLeft,
-        stats,
-        chapterSceneId,
-        choiceStyleProfile,
-      });
-
-      savedProgressRef.current = {
+      const progressPayload: StoredProgress = {
         screen,
         selectedCharacterId,
         pointsLeft,
@@ -177,18 +210,49 @@ function App() {
         chapterSceneId,
         choiceStyleProfile,
       };
+
+      if (firebaseDb && user) {
+        await saveGameProgress(firebaseDb, user.uid, progressPayload);
+        setProgressStatus('Game saved. You can safely resume later.');
+      } else {
+        saveLocalProgress(progressPayload);
+        setProgressStatus('Game saved locally.');
+      }
+
+      savedProgressRef.current = progressPayload;
       setSavedProgressAvailable(true);
-      setProgressStatus('Game saved. You can safely resume later.');
+      return true;
     } catch (error) {
-      setProgressError(error instanceof Error ? error.message : 'Failed to save progress.');
+      const progressPayload: StoredProgress = {
+        screen,
+        selectedCharacterId,
+        pointsLeft,
+        stats,
+        chapterSceneId,
+        choiceStyleProfile,
+      };
+      saveLocalProgress(progressPayload);
+      savedProgressRef.current = progressPayload;
+      setSavedProgressAvailable(true);
+      setProgressStatus('Saved locally after cloud save failed.');
+      setProgressError(error instanceof Error ? error.message : 'Cloud save failed, local save succeeded.');
+      return true;
     } finally {
       setManualSaveInProgress(false);
     }
   };
 
+  const handleSaveAndReturnHome = async () => {
+    const saved = await handleManualSave();
+    if (saved) {
+      setScreen('menu');
+    }
+  };
+
   const handleGuestSignIn = async () => {
-    if (!firebaseAuth || !hasFirebaseConfig) {
-      setAuthError('Firebase is not configured. Add VITE_FIREBASE_* values in .env.local.');
+    if (!firebaseAuth) {
+      setAuthError('Cloud guest sign-in unavailable. You can still play and save locally.');
+      setProgressStatus('Offline guest mode enabled.');
       return;
     }
 
@@ -197,7 +261,13 @@ function App() {
     try {
       await signInAnonymously(firebaseAuth);
     } catch (error) {
-      setAuthError(error instanceof Error ? error.message : 'Sign-in failed.');
+      const message = error instanceof Error ? error.message : 'Sign-in failed.';
+      if (message.includes('auth/configuration-not-found')) {
+        setAuthError('Guest auth is disabled in Firebase. You can still play and save locally.');
+        setProgressStatus('Offline guest mode enabled.');
+      } else {
+        setAuthError(message);
+      }
     }
   };
 
@@ -357,8 +427,8 @@ function App() {
           <div className="button-group" style={{ marginTop: '1rem' }}>
             <button
               className="menu-button load-button"
-              onClick={() => void handleManualSave()}
-              disabled={manualSaveInProgress || !user || !hasFirebaseConfig}
+              onClick={() => void handleSaveAndReturnHome()}
+                disabled={manualSaveInProgress}
             >
               {manualSaveInProgress ? 'Saving...' : 'Save Game'}
             </button>
@@ -399,9 +469,9 @@ function App() {
         onStatsChange={setStats}
         choiceStyleProfile={choiceStyleProfile}
         onChoiceStyleProfileChange={setChoiceStyleProfile}
-        onSaveGame={() => void handleManualSave()}
+        onSaveGame={() => void handleSaveAndReturnHome()}
         saveInProgress={manualSaveInProgress}
-        canSave={Boolean(user && hasFirebaseConfig)}
+          canSave={true}
         initialSceneId={chapterSceneId}
         onSceneChange={setChapterSceneId}
         onReturnToMenu={() => setScreen('menu')}
