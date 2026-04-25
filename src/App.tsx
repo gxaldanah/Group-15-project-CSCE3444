@@ -70,6 +70,7 @@ function saveLocalProgress(progress: StoredProgress) {
 function App() {
   const [screen, setScreen] = useState<Screen>('menu');
   const [user, setUser] = useState<User | null>(null);
+  const [localGuestMode, setLocalGuestMode] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
   const [pointsLeft, setPointsLeft] = useState(defaultPoints);
@@ -251,7 +252,8 @@ function App() {
 
   const handleGuestSignIn = async () => {
     if (!firebaseAuth) {
-      setAuthError('Cloud guest sign-in unavailable. You can still play and save locally.');
+      setLocalGuestMode(true);
+      setAuthError(null);
       setProgressStatus('Offline guest mode enabled.');
       return;
     }
@@ -263,7 +265,8 @@ function App() {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Sign-in failed.';
       if (message.includes('auth/configuration-not-found')) {
-        setAuthError('Guest auth is disabled in Firebase. You can still play and save locally.');
+        setLocalGuestMode(true);
+        setAuthError(null);
         setProgressStatus('Offline guest mode enabled.');
       } else {
         setAuthError(message);
@@ -272,12 +275,16 @@ function App() {
   };
 
   const handleSignOut = async () => {
-    if (!firebaseAuth) return;
+    if (!firebaseAuth) {
+      setLocalGuestMode(false);
+      return;
+    }
 
     setAuthError(null);
 
     try {
       await signOut(firebaseAuth);
+      setLocalGuestMode(false);
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : 'Sign-out failed.');
     }
@@ -301,7 +308,7 @@ function App() {
   };
 
   const handleResumeGame = () => {
-    const progress = savedProgressRef.current;
+    const progress = savedProgressRef.current ?? loadLocalProgress();
 
     if (!progress) {
       return;
@@ -494,7 +501,9 @@ function App() {
         <p className="game-subtitle">Shape your story through your choices.</p>
         {hasFirebaseConfig ? (
           <p className="game-subtitle" style={{ fontSize: '0.95rem', opacity: 0.85 }}>
-            {user ? `Signed in as ${user.isAnonymous ? 'Guest' : user.uid}` : 'Not signed in'}
+            {user || localGuestMode
+              ? `Signed in as ${user?.isAnonymous || localGuestMode ? 'Guest' : user?.uid}`
+              : 'Not signed in'}
           </p>
         ) : null}
         {progressStatus ? (
@@ -513,7 +522,7 @@ function App() {
           </p>
         ) : null}
         <div className="button-group">
-          {user ? (
+          {user || localGuestMode ? (
             <button className="menu-button load-button" onClick={handleSignOut}>
               Sign Out
             </button>
