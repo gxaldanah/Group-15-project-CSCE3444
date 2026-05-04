@@ -1,6 +1,6 @@
 import { getApp, getApps, initializeApp, type FirebaseApp, type FirebaseOptions } from 'firebase/app';
-import { getAuth, type Auth } from 'firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getAuth, type Auth, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, type Firestore, connectFirestoreEmulator } from 'firebase/firestore';
 
 const isNonEmpty = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
@@ -31,6 +31,7 @@ const firebaseConfig: FirebaseOptions = {
 };
 
 const hasFirebaseConfig = Object.values(requiredFirebaseConfig).every(isNonEmpty);
+const useFirebaseEmulators = import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true';
 
 let firebaseApp: FirebaseApp | null = null;
 let firebaseAuth: Auth | null = null;
@@ -39,7 +40,18 @@ let firebaseDb: Firestore | null = null;
 if (hasFirebaseConfig) {
   firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   firebaseAuth = getAuth(firebaseApp);
+  if (useFirebaseEmulators) {
+    connectAuthEmulator(firebaseAuth, 'http://127.0.0.1:9099');
+  }
   firebaseDb = getFirestore(firebaseApp);
+  if (useFirebaseEmulators) {
+    // Connect Firestore to local emulator at default port 8080 if available.
+    try {
+      connectFirestoreEmulator(firebaseDb, '127.0.0.1', 8080);
+    } catch (e) {
+      // ignore if emulator connector is unavailable at runtime
+    }
+  }
 } else {
   console.warn('Firebase is not configured. Add VITE_FIREBASE_* values to enable it.');
 }

@@ -53,9 +53,18 @@ service cloud.firestore {
         && isValidChapterSceneId(data.chapterSceneId)
         && isValidChoiceStyleProfile(data.choiceStyleProfile)
         && isValidStats(data.stats)
-        && data.updatedAt is timestamp
-        && data.updatedAt <= request.time
-        && data.updatedAt > request.time - duration.value(5, 'm');
+        // Allow either a concrete timestamp within a small window OR a null value
+        // This permits client writes that use FieldValue.serverTimestamp() (which
+        // may appear as null in the incoming request) as well as concrete
+        // client-generated timestamps.
+        && (
+          (
+            data.updatedAt is timestamp
+            && data.updatedAt <= request.time
+            && data.updatedAt > request.time - duration.value(5, 'm')
+          )
+          || data.updatedAt == null
+        );
     }
 
     match /gameProgress/{userId} {

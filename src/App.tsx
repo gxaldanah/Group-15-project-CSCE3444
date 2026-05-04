@@ -135,10 +135,11 @@ function App() {
 
         progressHydratedRef.current = true;
       })
-      .catch((error) => {
+      .catch(() => {
         if (cancelled) return;
-        setProgressError(error instanceof Error ? error.message : 'Failed to load progress.');
-        setProgressStatus(null);
+        setSavedProgressAvailable(false);
+        setProgressError(null);
+        setProgressStatus('No saved progress found.');
         progressHydratedRef.current = true;
       });
 
@@ -179,7 +180,8 @@ function App() {
             saveLocalProgress(progressPayload);
             savedProgressRef.current = progressPayload;
             setSavedProgressAvailable(true);
-            setProgressStatus('Saved locally (offline mode).');
+            setProgressStatus('Saved locally.');
+            setProgressError(null);
           });
         return;
       }
@@ -187,7 +189,7 @@ function App() {
       saveLocalProgress(progressPayload);
       savedProgressRef.current = progressPayload;
       setSavedProgressAvailable(true);
-      setProgressStatus('Saved locally (offline mode).');
+      setProgressStatus('Saved locally.');
     }, 400);
 
     return () => window.clearTimeout(timeoutId);
@@ -235,8 +237,8 @@ function App() {
       saveLocalProgress(progressPayload);
       savedProgressRef.current = progressPayload;
       setSavedProgressAvailable(true);
-      setProgressStatus('Saved locally after cloud save failed.');
-      setProgressError(error instanceof Error ? error.message : 'Cloud save failed, local save succeeded.');
+      setProgressStatus('Saved locally.');
+      setProgressError(null);
       return true;
     } finally {
       setManualSaveInProgress(false);
